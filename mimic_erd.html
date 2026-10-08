@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MIMIC-IV Hospital DB — ERD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 32px 24px 60px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #58a6ff;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 0.72rem;
+    color: #8b949e;
+    margin-bottom: 32px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Layout ── */
+  .canvas {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  svg.lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  /* ── Table cards ── */
+  .tbl {
+    position: absolute;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    min-width: 220px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  .tbl-head {
+    background: #21262d;
+    border-bottom: 1px solid #30363d;
+    padding: 8px 14px;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tbl-head .icon { font-size: 0.85rem; }
+  .tbl-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #f0f6fc;
+    letter-spacing: 0.03em;
+  }
+  .tbl-rows { padding: 6px 0; }
+  .col-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 14px;
+    font-size: 0.68rem;
+    line-height: 1.5;
+  }
+  .col-row:hover { background: #1c2128; }
+  .badge {
+    font-size: 0.55rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+  .pk  { background: #d29922; color: #0d1117; }
+  .fk  { background: #388bfd; color: #0d1117; }
+  .col-name { color: #c9d1d9; }
+  .col-type { color: #8b949e; margin-left: auto; font-size: 0.62rem; }
+
+  /* ── Legend ── */
+  .legend {
+    margin-top: 24px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    font-size: 0.65rem;
+    color: #8b949e;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-line {
+    width: 28px; height: 2px;
+    background: #388bfd;
+  }
+  .legend-crow { font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<h1>MIMIC-IV Hospital Schema</h1>
+<p class="subtitle">Entity–Relationship Diagram · Crow's Foot Notation · 11 tables</p>
+
+<div class="canvas" id="canvas" style="height:900px;">
+
+  <!-- SVG connector lines drawn by JS -->
+  <svg class="lines" id="lines"></svg>
+
+  <!-- ══════════════════════════════════
+       TABLE CARDS  (positioned via JS)
+       ══════════════════════════════════ -->
+
+  <!-- hosp_admissions (central hub) -->
+  <div class="tbl" id="t_admissions" style="left:440px;top:340px;">
+    <div class="tbl-head"><span class="icon">🏥</span><span class="tbl-name">hosp_admissions</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge pk">PK</span><span class="col-name">hadm_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">subject_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">admittime</span><span class="col-type">TIMESTAMP</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">dischtime</span><span class="col-type">TIMESTAMP</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">admission_type</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">race</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">insurance</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">hospital_expire_flag</span><span class="col-type">BIGINT</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_diagnoses_icd -->
+  <div class="tbl" id="t_diagnoses" style="left:760px;top:200px;">
+    <div class="tbl-head"><span class="icon">🩺</span><span class="tbl-name">hosp_diagnoses_icd</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">subject_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">hadm_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">seq_num</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">icd_code</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">icd_version</span><span class="col-type">BIGINT</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_d_icd_diagnoses (lookup) -->
+  <div class="tbl" id="t_d_icd_diag" style="left:1010px;top:100px;">
+    <div class="tbl-head"><span class="icon">📖</span><span class="tbl-name">hosp_d_icd_diagnoses</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge pk">PK</span><span class="col-name">icd_code</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">icd_version</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">long_title</span><span class="col-type">VARCHAR</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_labevents -->
+  <div class="tbl" id="t_labevents" style="left:760px;top:480px;">
+    <div class="tbl-head"><span class="icon">🧪</span><span class="tbl-name">hosp_labevents</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge pk">PK</span><span class="col-name">labevent_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">subject_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">hadm_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">itemid</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">charttime</span><span class="col-type">TIMESTAMP</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">value / valuenum</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">flag</span><span class="col-type">VARCHAR</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_d_labitems (lookup) -->
+  <div class="tbl" id="t_d_labitems" style="left:1010px;top:480px;">
+    <div class="tbl-head"><span class="icon">📖</span><span class="tbl-name">hosp_d_labitems</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge pk">PK</span><span class="col-name">itemid</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">label</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">fluid</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">category</span><span class="col-type">VARCHAR</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_emar -->
+  <div class="tbl" id="t_emar" style="left:760px;top:680px;">
+    <div class="tbl-head"><span class="icon">💊</span><span class="tbl-name">hosp_emar</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge pk">PK</span><span class="col-name">emar_id</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">subject_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">hadm_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">emar_seq</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">medication</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">charttime</span><span class="col-type">TIMESTAMP</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_emar_detail -->
+  <div class="tbl" id="t_emar_detail" style="left:1010px;top:680px;">
+    <div class="tbl-head"><span class="icon">📋</span><span class="tbl-name">hosp_emar_detail</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">subject_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">emar_id</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">emar_seq</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">dose_given</span><span class="col-type">DOUBLE</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">route</span><span class="col-type">VARCHAR</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_drgcodes -->
+  <div class="tbl" id="t_drgcodes" style="left:100px;top:200px;">
+    <div class="tbl-head"><span class="icon">🏷️</span><span class="tbl-name">hosp_drgcodes</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">subject_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">hadm_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">drg_type</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">drg_code</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">drg_severity</span><span class="col-type">BIGINT</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_hcpcsevents -->
+  <div class="tbl" id="t_hcpcsevents" style="left:100px;top:440px;">
+    <div class="tbl-head"><span class="icon">⚕️</span><span class="tbl-name">hosp_hcpcsevents</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">subject_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">hadm_id</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="badge fk">FK</span><span class="col-name">hcpcs_cd</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">seq_num</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">chartdate</span><span class="col-type">DATE</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_d_hcpcs (lookup) -->
+  <div class="tbl" id="t_d_hcpcs" style="left:100px;top:650px;">
+    <div class="tbl-head"><span class="icon">📖</span><span class="tbl-name">hosp_d_hcpcs</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge pk">PK</span><span class="col-name">code</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">category</span><span class="col-type">SMALLINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">long_description</span><span class="col-type">TEXT</span></div>
+    </div>
+  </div>
+
+  <!-- hosp_d_icd_procedures (lookup) -->
+  <div class="tbl" id="t_d_icd_proc" style="left:1010px;top:280px;">
+    <div class="tbl-head"><span class="icon">📖</span><span class="tbl-name">hosp_d_icd_procedures</span></div>
+    <div class="tbl-rows">
+      <div class="col-row"><span class="badge pk">PK</span><span class="col-name">icd_code</span><span class="col-type">VARCHAR</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">icd_version</span><span class="col-type">BIGINT</span></div>
+      <div class="col-row"><span class="col-name" style="margin-left:28px">long_title</span><span class="col-type">VARCHAR</span></div>
+    </div>
+  </div>
+
+</div><!-- /canvas -->
+
+<!-- Legend -->
+<div class="legend" style="max-width:1200px;margin:16px auto 0;">
+  <div class="legend-item">
+    <svg width="50" height="16" viewBox="0 0 50 16">
+      <line x1="0" y1="8" x2="50" y2="8" stroke="#388bfd" stroke-width="1.5"/>
+      <!-- crow's foot many end -->
+      <line x1="44" y1="3" x2="50" y2="8" stroke="#388bfd" stroke-width="1.5"/>
+      <line x1="44" y1="13" x2="50" y2="8" stroke="#388bfd" stroke-width="1.5"/>
+      <line x1="41" y1="3" x2="41" y2="13" stroke="#388bfd" stroke-width="1.5"/>
+      <!-- one end -->
+      <line x1="6" y1="3" x2="6" y2="13" stroke="#388bfd" stroke-width="1.5"/>
+    </svg>
+    <span>One-to-Many (1 : ∞)</span>
+  </div>
+  <div class="legend-item">
+    <span class="badge pk" style="font-size:0.6rem">PK</span><span>Primary Key</span>
+  </div>
+  <div class="legend-item">
+    <span class="badge fk" style="font-size:0.6rem">FK</span><span>Foreign Key</span>
+  </div>
+  <div class="legend-item" style="margin-left:auto;font-size:0.6rem;color:#484f58;">
+    MIMIC-IV Demo · DuckDB
+  </div>
+</div>
+
+<script>
+// ── Draw crow's foot connectors ──────────────────────────────────────────────
+// Each entry: [fromTableId, fromSide, toTableId, toSide, label, cardinality]
+// cardinality: 'one-many' means from=one, to=many (crow at "to" end)
+
+const rels = [
+  // admissions → children (many)
+  ['t_admissions', 'right', 't_diagnoses',   'left',  'hadm_id', 'one-many'],
+  ['t_admissions', 'right', 't_labevents',   'left',  'hadm_id', 'one-many'],
+  ['t_admissions', 'right', 't_emar',        'left',  'hadm_id', 'one-many'],
+  ['t_admissions', 'left',  't_drgcodes',    'right', 'hadm_id', 'one-many'],
+  ['t_admissions', 'left',  't_hcpcsevents', 'right', 'hadm_id', 'one-many'],
+  // lookup tables (one side)
+  ['t_d_icd_diag', 'left',  't_diagnoses',   'right', 'icd_code', 'one-many'],
+  ['t_d_labitems', 'left',  't_labevents',   'right', 'itemid',   'one-many'],
+  ['t_emar',       'right', 't_emar_detail', 'left',  'emar_id',  'one-many'],
+  ['t_d_hcpcs',    'right', 't_hcpcsevents', 'left',  'hcpcs_cd', 'one-many'],
+  ['t_d_icd_proc', 'left',  't_diagnoses',   'right', '',         'one-many'],
+];
+
+function getAnchor(el, side) {
+  const r = el.getBoundingClientRect();
+  const cr = document.getElementById('canvas').getBoundingClientRect();
+  const x = r.left - cr.left;
+  const y = r.top  - cr.top;
+  if (side === 'left')  return { x: x,          y: y + r.height/2 };
+  if (side === 'right') return { x: x + r.width, y: y + r.height/2 };
+  if (side === 'top')   return { x: x + r.width/2, y: y };
+  if (side === 'bottom')return { x: x + r.width/2, y: y + r.height };
+}
+
+function crowFoot(svg, x, y, dir) {
+  // dir: 'left' means crow points left, 'right' means crow points right
+  const s = 10, h = 6;
+  let g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  if (dir === 'right') {
+    // crow at right end
+    const l1 = line(svg, x-s, y-h, x, y); g.appendChild(l1);
+    const l2 = line(svg, x-s, y+h, x, y); g.appendChild(l2);
+    const l3 = line(svg, x-s, y-h, x-s, y+h); g.appendChild(l3);
+  } else {
+    // crow at left end
+    const l1 = line(svg, x+s, y-h, x, y); g.appendChild(l1);
+    const l2 = line(svg, x+s, y+h, x, y); g.appendChild(l2);
+    const l3 = line(svg, x+s, y-h, x+s, y+h); g.appendChild(l3);
+  }
+  return g;
+}
+
+function oneMark(svg, x, y, dir) {
+  // single vertical tick
+  const h = 6;
+  const offset = 14;
+  let lx = dir === 'right' ? x - offset : x + offset;
+  return line(svg, lx, y-h, lx, y+h);
+}
+
+function line(svg, x1, y1, x2, y2) {
+  const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+  l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+  l.setAttribute('stroke', '#388bfd');
+  l.setAttribute('stroke-width', '1.4');
+  l.setAttribute('stroke-linecap', 'round');
+  return l;
+}
+
+function path(x1,y1,x2,y2) {
+  const cx = (x1+x2)/2;
+  return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+}
+
+window.addEventListener('load', () => {
+  const svg = document.getElementById('lines');
+  const canvas = document.getElementById('canvas');
+
+  rels.forEach(([fromId, fromSide, toId, toSide, label, card]) => {
+    const fromEl = document.getElementById(fromId);
+    const toEl   = document.getElementById(toId);
+    if (!fromEl || !toEl) return;
+
+    const a = getAnchor(fromEl, fromSide);
+    const b = getAnchor(toEl,   toSide);
+
+    // path
+    const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d', path(a.x,a.y,b.x,b.y));
+    p.setAttribute('fill','none');
+    p.setAttribute('stroke','#388bfd');
+    p.setAttribute('stroke-width','1.4');
+    p.setAttribute('opacity','0.7');
+    svg.appendChild(p);
+
+    // crow's foot at "many" end (b) — direction toward b
+    const crowDir = toSide === 'left' ? 'left' : 'right';
+    const crow = crowFoot(svg, b.x, b.y, crowDir);
+    crow.querySelectorAll('line').forEach(l => { l.setAttribute('opacity','0.9'); });
+    svg.appendChild(crow);
+
+    // one mark at "one" end (a)
+    const oneDir = fromSide === 'right' ? 'right' : 'left';
+    const om = oneMark(svg, a.x, a.y, oneDir);
+    om.setAttribute('opacity','0.9');
+    svg.appendChild(om);
+
+    // label
+    if (label) {
+      const mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', mx); t.setAttribute('y', my-5);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-size','9');
+      t.setAttribute('font-family','JetBrains Mono, monospace');
+      t.setAttribute('fill','#8b949e');
+      t.textContent = label;
+      svg.appendChild(t);
+    }
+  });
+
+  // Resize canvas to fit all cards
+  const cards = canvas.querySelectorAll('.tbl');
+  let maxH = 0;
+  cards.forEach(c => {
+    const bottom = parseInt(c.style.top) + c.offsetHeight + 20;
+    if (bottom > maxH) maxH = bottom;
+  });
+  canvas.style.height = Math.max(900, maxH) + 'px';
+});
+</script>
+</body>
+</html>
