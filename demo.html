@@ -1,0 +1,637 @@
+<!doctype html>
+<html>
+<head>
+     <meta charset=utf8>
+     <meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+     <style>:root {
+         color-scheme: light;
+         box-sizing: border-box;
+         padding-top: env(safe-area-inset-top, 0px);
+         padding-bottom: env(safe-area-inset-bottom, 0px)
+     }
+
+     html {
+         scroll-padding-top: env(safe-area-inset-top, 0px)
+     }
+
+     body {
+         margin: 0;
+         padding: 0;
+         font: 14px -apple-system, BlinkMacSystemFont, sans-serif;
+         background: #faf9f5;
+         color: #141413
+     }
+
+     img {
+         max-width: 100%
+     }
+
+     [hidden]:not([hidden=until-found i]) {
+         display: none !important
+     }</style>
+</head>
+<body>
+<title>Founder Pinboard Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    /* Layout: portal shell, slim left nav + content pane; stacks to top tabs on phones */
+    :root {
+        --bg: #f4f6f5;
+        --panel: #ffffff;
+        --fg: #1e2423;
+        --muted: #5f6a67;
+        --rule: #dde3e0;
+        --accent: #1f6b5f;
+        --accent-soft: #e3f0ed;
+        --on-accent: #ffffff;
+        --warm: #8a5a12;
+        --warm-soft: #f8eedd;
+        --body: 'Instrument Sans', -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --bg: #121615;
+            --panel: #1b201f;
+            --fg: #e4e9e7;
+            --muted: #9aa6a3;
+            --rule: #2c3432;
+            --accent: #7cc4b6;
+            --accent-soft: #1f302c;
+            --on-accent: #0f1513;
+            --warm: #e2b56a;
+            --warm-soft: #2d2518;
+            color-scheme: dark
+        }
+    }
+
+    :root[data-theme="dark"] {
+        --bg: #121615;
+        --panel: #1b201f;
+        --fg: #e4e9e7;
+        --muted: #9aa6a3;
+        --rule: #2c3432;
+        --accent: #7cc4b6;
+        --accent-soft: #1f302c;
+        --on-accent: #0f1513;
+        --warm: #e2b56a;
+        --warm-soft: #2d2518;
+        color-scheme: dark
+    }
+
+    * {
+        box-sizing: border-box
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--fg);
+        font: 15px/1.5 var(--body)
+    }
+
+    .note {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding-inline: 16px;
+        padding-block: 14px 0;
+        color: var(--muted);
+        font-size: .85rem
+    }
+
+    .shell {
+        max-width: 1040px;
+        margin: 12px auto 40px;
+        padding-inline: 16px;
+        display: grid;
+        grid-template-columns:190px 1fr;
+        gap: 16px
+    }
+
+    nav {
+        display: flex;
+        flex-direction: column;
+        gap: 2px
+    }
+
+    .brand {
+        font-weight: 600;
+        padding: 8px 10px 14px
+    }
+
+    .brand small {
+        display: block;
+        color: var(--muted);
+        font-weight: 400;
+        font-size: .8rem
+    }
+
+    nav button {
+        all: unset;
+        cursor: pointer;
+        padding: 8px 10px;
+        border-radius: 6px;
+        color: var(--muted)
+    }
+
+    nav button[aria-current="page"] {
+        background: var(--panel);
+        color: var(--fg);
+        font-weight: 600;
+        box-shadow: 0 0 0 1px var(--rule)
+    }
+
+    nav button:focus-visible, button:focus-visible, input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px
+    }
+
+    .nav-dim {
+        padding: 8px 10px;
+        color: var(--muted);
+        opacity: .6
+    }
+
+    .pane {
+        background: var(--panel);
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        padding: 22px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px
+    }
+
+    h1 {
+        font-size: 1.3rem;
+        margin: 0
+    }
+
+    .sub {
+        color: var(--muted);
+        margin: 0
+    }
+
+    label.fld {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 88px;
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        padding: 10px;
+        font: inherit;
+        background: var(--bg);
+        color: var(--fg)
+    }
+
+    .optin {
+        border: 1px solid var(--accent);
+        background: var(--accent-soft);
+        border-radius: 10px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px
+    }
+
+    .optin .row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start
+    }
+
+    .optin input {
+        margin-top: 4px;
+        accent-color: var(--accent)
+    }
+
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px
+    }
+
+    .tag {
+        border: 1px solid var(--rule);
+        background: var(--panel);
+        color: var(--fg);
+        border-radius: 999px;
+        padding: 4px 11px;
+        font: inherit;
+        font-size: .88rem;
+        cursor: pointer
+    }
+
+    .tag[aria-pressed="true"] {
+        border-color: var(--accent);
+        color: var(--accent);
+        font-weight: 600
+    }
+
+    .small {
+        font-size: .85rem;
+        color: var(--muted)
+    }
+
+    .btn {
+        border: 0;
+        border-radius: 7px;
+        padding: 9px 16px;
+        background: var(--accent);
+        color: var(--on-accent);
+        font: 600 .92rem var(--body);
+        cursor: pointer;
+        align-self: flex-start
+    }
+
+    .btn.ghost {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid var(--accent)
+    }
+
+    .toast {
+        background: var(--accent-soft);
+        color: var(--accent);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-weight: 500
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px
+    }
+
+    .card {
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0
+    }
+
+    .card h3 {
+        margin: 0;
+        font-size: 1rem
+    }
+
+    .cat {
+        font-size: .78rem;
+        color: var(--muted);
+        letter-spacing: .02em
+    }
+
+    .counts {
+        display: flex;
+        gap: 14px;
+        font-size: .9rem;
+        font-variant-numeric: tabular-nums
+    }
+
+    .counts b {
+        font-size: 1.05rem
+    }
+
+    .lived {
+        color: var(--warm)
+    }
+
+    .people {
+        font-size: .85rem;
+        color: var(--muted)
+    }
+
+    .you {
+        color: var(--accent);
+        font-weight: 600
+    }
+
+    .event {
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        overflow: hidden
+    }
+
+    .event header {
+        padding: 14px;
+        background: var(--bg);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px
+    }
+
+    .event header h3 {
+        margin: 0;
+        font-size: 1.05rem
+    }
+
+    .attendees {
+        list-style: none;
+        margin: 0;
+        padding: 0
+    }
+
+    .attendees li {
+        display: grid;
+        grid-template-columns:150px 1fr;
+        gap: 10px;
+        padding: 10px 14px;
+        border-top: 1px solid var(--rule);
+        align-items: center
+    }
+
+    .pill {
+        display: inline-block;
+        font-size: .8rem;
+        border-radius: 999px;
+        padding: 2px 9px;
+        margin: 2px 4px 2px 0;
+        background: var(--accent-soft);
+        color: var(--accent)
+    }
+
+    .pill.l {
+        background: var(--warm-soft);
+        color: var(--warm)
+    }
+
+    .private {
+        color: var(--muted);
+        font-size: .85rem;
+        font-style: italic
+    }
+
+    @media (max-width: 720px) {
+        .shell {
+            grid-template-columns:1fr
+        }
+
+        nav {
+            flex-direction: row;
+            flex-wrap: wrap
+        }
+
+        .brand, .nav-dim {
+            display: none
+        }
+
+        .attendees li {
+            grid-template-columns:1fr;
+            gap: 2px
+        }
+    }
+</style>
+
+<p class="note">Prototype for Laura. Made-up founders and data. Shows what a founder would see inside the existing
+     portal.</p>
+
+<div class="shell">
+     <nav aria-label="Portal">
+          <div class="brand">Founder portal<small>Priya · Northwind Labs</small></div>
+          <span class="nav-dim">Dashboard</span>
+          <button id="t-update" data-view="update">Monthly update</button>
+          <button id="t-board" data-view="board" aria-current="page">Pinboard</button>
+          <button id="t-events" data-view="events">Events</button>
+     </nav>
+
+     <!-- View 1: monthly update with opt-in -->
+     <section class="pane" id="v-update" hidden>
+          <div>
+               <h1>October update</h1>
+               <p class="sub">Revenue and customer numbers stay private to you and Volta.</p>
+          </div>
+          <div>
+               <label class="fld" for="stuck">Where are you stuck?</label>
+               <textarea id="stuck">We're moving our sales pipeline out of spreadsheets before our first sales hire starts in January. Every CRM we've tried feels built for a team of fifty, not four.</textarea>
+          </div>
+          <div class="optin">
+               <div class="row">
+                    <input type="checkbox" id="share" checked>
+                    <div>
+                         <label for="share"><b>Share this topic with other founders</b></label>
+                         <div class="small">Only the topic shows on the Pinboard, with your name. What you wrote above
+                              stays private.
+                         </div>
+                    </div>
+               </div>
+               <div>
+                    <div class="small" style="margin-bottom:6px">Suggested from what you wrote. Tap to change.</div>
+                    <div class="tags" id="sharetags">
+                         <button class="tag" aria-pressed="true">Moving off spreadsheets to a CRM</button>
+                         <button class="tag" aria-pressed="false">Hiring a first salesperson</button>
+                         <button class="tag" aria-pressed="false">Software costs</button>
+                    </div>
+               </div>
+               <div class="row">
+                    <input type="checkbox" id="livedchk" checked>
+                    <div>
+                         <label for="livedchk"><b>I've lived through these</b></label>
+                         <div class="small">Others can ask about your experience. You share what happened, not advice.
+                         </div>
+                         <div class="tags" id="livedtags" style="margin-top:6px">
+                              <button class="tag" aria-pressed="true">Running a paid pilot</button>
+                              <button class="tag" aria-pressed="false">Grant applications</button>
+                              <button class="tag" aria-pressed="true">Pricing a SaaS product</button>
+                         </div>
+                    </div>
+               </div>
+          </div>
+          <button class="btn" id="submit">Submit update</button>
+          <div class="toast" id="submitted" hidden>Update sent to Volta. Your shared topics are now on the Pinboard.
+          </div>
+     </section>
+
+     <!-- View 2: pinboard -->
+     <section class="pane" id="v-board">
+          <div>
+               <h1>Pinboard</h1>
+               <p class="sub">What founders in the residency are working on this month. Only topics people chose to
+                    share.</p>
+          </div>
+          <div class="filters" id="filters">
+               <button class="tag" aria-pressed="true" data-f="all">All</button>
+               <button class="tag" aria-pressed="false" data-f="Operations">Operations</button>
+               <button class="tag" aria-pressed="false" data-f="Sales">Sales</button>
+               <button class="tag" aria-pressed="false" data-f="Funding">Funding</button>
+               <button class="tag" aria-pressed="false" data-f="lived">I've lived through it</button>
+          </div>
+          <div class="grid" id="grid"></div>
+          <div class="toast" id="joined" hidden></div>
+     </section>
+
+     <!-- View 3: event -->
+     <section class="pane" id="v-events" hidden>
+          <div>
+               <h1>Events</h1>
+               <p class="sub">See who's coming and what they're working on, so the first conversation starts at the real
+                    issue.</p>
+          </div>
+          <article class="event">
+               <header>
+                    <div><h3>Founders Lunch</h3>
+                         <div class="small">Thursday, Oct 15 · 12:00 · Volta</div>
+                    </div>
+                    <button class="btn ghost" id="rsvp">I'm going</button>
+               </header>
+               <ul class="attendees" id="attendees">
+                    <li><b>Sam Okafor</b>
+                         <div><span class="pill">Moving off spreadsheets to a CRM</span><span class="pill l">Lived through: Grant applications</span>
+                         </div>
+                    </li>
+                    <li><b>Jordan Lee</b>
+                         <div><span class="pill">Enterprise procurement</span></div>
+                    </li>
+                    <li><b>Amir Haddad</b>
+                         <div><span class="pill l">Lived through: Moving off spreadsheets to a CRM</span><span
+                                 class="pill l">Lived through: Hiring a first salesperson</span></div>
+                    </li>
+                    <li><b>Leah Martin</b>
+                         <div class="private">Hasn't shared topics</div>
+                    </li>
+               </ul>
+          </article>
+          <article class="event">
+               <header>
+                    <div><h3>Founders Happier Hour (online)</h3>
+                         <div class="small">Wednesday, Oct 21 · 16:30 · Breakout rooms by topic</div>
+                    </div>
+               </header>
+               <ul class="attendees">
+                    <li><b>Room: Operations</b>
+                         <div><span class="pill">Moving off spreadsheets to a CRM</span><span class="pill">Software costs</span>
+                              6 founders
+                         </div>
+                    </li>
+                    <li><b>Room: Sales</b>
+                         <div><span class="pill">Enterprise procurement</span><span class="pill">Pricing</span> 4
+                              founders
+                         </div>
+                    </li>
+               </ul>
+               <p class="small" style="padding:0 14px 14px">Rooms are filled from shared topics, so Laura doesn't sort
+                    them by hand.</p>
+          </article>
+     </section>
+</div>
+
+<script>
+    var topics = [
+        {
+            t: "Moving off spreadsheets to a CRM",
+            c: "Operations",
+            w: 8,
+            l: 3,
+            names: "Sam, Ana, Tomás and 5 more",
+            lived: "Amir, Grace, Theo",
+            mine: true
+        },
+        {t: "Enterprise procurement", c: "Sales", w: 5, l: 2, names: "Jordan, Wei and 3 more", lived: "Leah, Marc"},
+        {
+            t: "Hiring a first salesperson",
+            c: "Sales",
+            w: 6,
+            l: 4,
+            names: "Ana, Kofi and 4 more",
+            lived: "Amir, Priya, Noor, Ben"
+        },
+        {t: "Grant applications", c: "Funding", w: 7, l: 3, names: "Theo, Ines and 5 more", lived: "Sam, Rosa, Dev"},
+        {
+            t: "Pricing a SaaS product",
+            c: "Sales",
+            w: 4,
+            l: 5,
+            names: "Mo, Dana and 2 more",
+            lived: "Priya, Wei and 3 more",
+            mineLived: true
+        },
+        {t: "SR&ED tax credits", c: "Funding", w: 3, l: 1, names: "Kofi, Lu, Ana", lived: "Marc"}
+    ];
+    var filter = "all", joined = {};
+
+    function render() {
+        var g = document.getElementById("grid");
+        g.innerHTML = "";
+        topics.filter(function (x) {
+            return filter === "all" || (filter === "lived" ? x.l > 0 : x.c === filter);
+        }).forEach(function (x) {
+            var d = document.createElement("article");
+            d.className = "card";
+            d.innerHTML = '<span class="cat">' + x.c + '</span><h3>' + x.t + '</h3>' +
+                '<div class="counts"><span><b>' + x.w + '</b> working on it</span><span class="lived"><b>' + x.l + '</b> lived through it</span></div>' +
+                '<div class="people">' + (x.mine ? '<span class="you">You</span>, ' : '') + x.names + '</div>' +
+                '<div class="people">Lived through: ' + (x.mineLived ? '<span class="you">You</span>, ' : '') + x.lived + '</div>';
+            var b = document.createElement("button");
+            b.className = joined[x.t] ? "btn ghost" : "btn";
+            b.textContent = joined[x.t] ? "Joined" : "Join the conversation";
+            b.addEventListener("click", function () {
+                joined[x.t] = true;
+                render();
+                var j = document.getElementById("joined");
+                j.hidden = false;
+                j.textContent = "You're in. Everyone on “" + x.t + "” gets one intro email with each other's names, so you can set up a chat or call.";
+            });
+            d.appendChild(b);
+            g.appendChild(d);
+        });
+    }
+
+    render();
+    document.querySelectorAll("#filters .tag").forEach(function (b) {
+        b.addEventListener("click", function () {
+            document.querySelectorAll("#filters .tag").forEach(function (o) {
+                o.setAttribute("aria-pressed", "false");
+            });
+            b.setAttribute("aria-pressed", "true");
+            filter = b.dataset.f;
+            render();
+        });
+    });
+    document.querySelectorAll("#sharetags .tag,#livedtags .tag").forEach(function (b) {
+        b.addEventListener("click", function () {
+            b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true");
+        });
+    });
+    document.getElementById("submit").addEventListener("click", function () {
+        document.getElementById("submitted").hidden = false;
+    });
+    document.getElementById("rsvp").addEventListener("click", function () {
+        if (this.dataset.done) return;
+        this.dataset.done = 1;
+        this.textContent = "Going";
+        var li = document.createElement("li");
+        li.innerHTML = '<b class="you">You (Priya)</b><div><span class="pill">Moving off spreadsheets to a CRM</span><span class="pill l">Lived through: Running a paid pilot</span></div>';
+        document.getElementById("attendees").prepend(li);
+    });
+    document.querySelectorAll("nav button").forEach(function (b) {
+        b.addEventListener("click", function () {
+            document.querySelectorAll("nav button").forEach(function (o) {
+                o.removeAttribute("aria-current");
+            });
+            b.setAttribute("aria-current", "page");
+            ["update", "board", "events"].forEach(function (v) {
+                document.getElementById("v-" + v).hidden = (v !== b.dataset.view);
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
